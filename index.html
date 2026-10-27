@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Análisis de calidad · Metalmecánica Andina Ltda.</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#eef0f2;--card:#fff;--ink:#1d2730;--mut:#5b6873;--steel:#2f4858;--steel2:#456579;--ac:#e8590c;--ok:#2b8a3e;--bad:#c92a2a;--line:#d5dade}
+@media(prefers-color-scheme:dark){:root{--bg:#161c21;--card:#1f272d;--ink:#e6eaed;--mut:#9aa7b1;--steel:#8fb3c9;--steel2:#6d95ad;--line:#334048}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",system-ui,Roboto,sans-serif}
+header{background:#2f4858;color:#fff;padding:14px 16px;border-bottom:4px solid var(--ac)}
+header h1{margin:0;font-size:1.15rem}header p{margin:2px 0 0;font-size:.85rem;opacity:.85}
+nav{display:flex;gap:4px;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;padding:0 8px}
+nav button{flex:1;min-width:96px;border:0;background:none;color:var(--mut);padding:13px 8px;font:inherit;font-weight:600;cursor:pointer;border-bottom:3px solid transparent}
+nav button.on{color:var(--ink);border-bottom-color:var(--ac)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+main{max-width:1000px;margin:0 auto;padding:14px}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:14px}
+h2{margin:0 0 10px;font-size:1.2rem}h3{margin:14px 0 6px;font-size:1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+label{display:block;font-size:.85rem;color:var(--mut);font-weight:600}
+input,select,textarea{width:100%;font:inherit;padding:9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+textarea{min-height:120px;font-family:Consolas,monospace;font-size:.85rem}
+.btn{background:var(--steel);color:#fff;border:0;border-radius:6px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer}
+@media(prefers-color-scheme:dark){.btn{color:#10181d}}
+.btn.ac{background:var(--ac);color:#fff}.btn.sm{padding:6px 10px;font-size:.85rem}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.scroll{overflow-x:auto;max-height:340px;overflow-y:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}th{background:var(--bg);position:sticky;top:0}
+tr.bad td{color:var(--bad);font-weight:600}
+.kpi{border-left:4px solid var(--steel2);padding:8px 10px;background:var(--bg);border-radius:4px}
+.kpi b{display:block;font-size:1.4rem}.kpi span{font-size:.8rem;color:var(--mut)}
+.kpi.bad{border-color:var(--bad)}.kpi.ok{border-color:var(--ok)}
+.note{background:#fff4e6;color:#5c3000;border:1px solid #ffd8a8;border-radius:6px;padding:9px 12px;font-size:.88rem;margin-bottom:12px}
+.msg{font-size:.88rem;margin-top:6px}.msg.err{color:var(--bad)}
+.chart{position:relative;height:300px}
+ul.d{margin:0;padding-left:20px}ul.d li{margin-bottom:6px}
+.alt{border-left:5px solid var(--line);padding:8px 12px;margin-bottom:10px;background:var(--bg);border-radius:4px}
+.alt.Alta{border-color:var(--bad)}.alt.Media{border-color:var(--ac)}.alt.Baja{border-color:var(--ok)}
+.alt p{margin:3px 0;font-size:.92rem}
+.res{font-size:1.05rem}
+input[type=range]{padding:0}
+</style>
+</head>
+<body>
+<header><h1 id="hTitle">Análisis de calidad</h1><p id="hSub"></p></header>
+<nav id="nav">
+<button data-s="datos" class="on">Datos</button><button data-s="estad">Estadística</button><button data-s="graf">Gráficos</button><button data-s="reco">Recomendaciones</button>
+</nav>
+<main>
+<section id="datos" class="on">
+<div id="demoNote" class="note" hidden><b>Datos de ejemplo.</b> Mientras no cargues tu archivo CSV se muestran datos ilustrativos. Pulsa «Cargar archivo…» o pega tus 48 registros y luego «Usar estos datos».</div>
+<div class="card"><h2>Datos de la empresa y del proceso</h2>
+<div class="grid">
+<div><label for="fEmp">Empresa</label><input id="fEmp"></div>
+<div><label for="fVar">Variable</label><input id="fVar"></div>
+<div><label for="fUni">Unidad</label><input id="fUni"></div>
+<div><label for="fMej">¿Qué es mejor?</label><select id="fMej"><option>Menor valor</option><option>Mayor valor</option></select></div>
+<div><label for="fLse">Límite de especificación (máx.)</label><input id="fLse" type="number" step="any"></div>
+<div><label for="fMeta">Meta de la empresa</label><input id="fMeta" type="number" step="any"></div>
+<div><label for="fAut">Autor del informe</label><input id="fAut"></div>
+</div>
+<p class="msg" style="color:var(--mut)">Los cálculos y diagnósticos de esta app asumen que un valor menor es mejor (caso de defectos).</p></div>
+<div class="card"><h2>Registros</h2>
+<label for="csv">Pega el CSV aquí (una columna de valores, o «lote,defectos»)</label>
+<textarea id="csv" spellcheck="false"></textarea>
+<div class="row"><button class="btn ac" id="bUse">Usar estos datos</button>
+<label class="btn" style="margin:0;cursor:pointer">Cargar archivo…<input id="file" type="file" accept=".csv,.txt,text/csv" hidden></label>
+<button class="btn sm" id="bReset" style="background:var(--mut)">Restablecer ejemplo</button></div>
+<div id="dMsg" class="msg" role="status"></div></div>
+<div class="card"><h2>Tabla de datos <span id="dCount" style="font-weight:400;font-size:.9rem"></span></h2><div class="scroll"><table id="tData"></table></div></div>
+</section>
+
+<section id="estad">
+<div class="card"><h2>Indicadores clave</h2><div class="grid" id="kpis"></div></div>
+<div class="card"><h2>Estadísticas descriptivas</h2><div class="scroll"><table id="tStats"></table></div></div>
+<div class="card"><h2>Tabla de frecuencias</h2>
+<p class="msg" id="freqNote" style="color:var(--mut);margin-top:0"></p>
+<div class="scroll"><table id="tFreq"></table></div></div>
+</section>
+
+<section id="graf">
+<div id="gWrap"></div>
+</section>
+
+<section id="reco">
+<div class="card"><h2>Diagnóstico automático</h2><div id="diag"></div></div>
+<div class="card"><h2>Alternativas de mejora</h2><div id="alts"></div></div>
+<div class="card"><h2>Simulación de mejora</h2>
+<label for="sMean">Reducir el promedio de defectos: <b id="vMean">0</b>%</label><input id="sMean" type="range" min="0" max="60" value="0">
+<label for="sSd" style="margin-top:10px">Reducir la variabilidad (desv. típica): <b id="vSd">0</b>%</label><input id="sSd" type="range" min="0" max="60" value="0">
+<div id="simOut" class="res" style="margin-top:12px"></div>
+<p class="msg" style="color:var(--mut)">Estimación con distribución normal a partir de la media y desviación de tus datos; es una aproximación (los datos son conteos).</p></div>
+<div class="card"><h2>Informe</h2><p style="margin-top:0">Crea una página con portada, resumen, tablas, gráficos, diagnóstico y recomendaciones, lista para imprimir o guardar como PDF.</p>
+<button class="btn ac" id="bRep">Generar informe</button><div id="rMsg" class="msg err"></div></div>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const KEY='andina_calidad_v1';
+const DEMO=[3,4,2,3,5,3,4,2,3,4,3,5,4,3,5,4,6,3,4,5,4,3,5,4,4,5,6,5,4,7,11,6,5,6,7,6,6,5,7,6,8,6,7,5,8,7,6,9];
+const DEF={emp:'Empresa Metalmecánica Andina Ltda.',vari:'Piezas defectuosas por lote',uni:'defectos/lote',mej:'Menor valor',lse:6,meta:3,aut:'Juan Sebastian Martinez Ortega',csv:'lote,defectos\n'+DEMO.map((v,i)=>(i+1)+','+v).join('\n'),demo:true};
+let S=Object.assign({},DEF),D=[],charts={};
+try{const t=JSON.parse(localStorage.getItem(KEY));if(t&&t.csv)S=Object.assign({},DEF,t)}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* ---------- utilidades ---------- */
+const sum=a=>a.reduce((x,y)=>x+y,0),mean=a=>sum(a)/a.length;
+const sd=a=>{if(a.length<2)return 0;const m=mean(a);return Math.sqrt(sum(a.map(x=>(x-m)**2))/(a.length-1))};
+function q(a,p){const s=[...a].sort((x,y)=>x-y),i=(s.length-1)*p,l=Math.floor(i);return s[l]+(s[Math.min(l+1,s.length-1)]-s[l])*(i-l)}
+const f=(x,d=2)=>Number.isFinite(x)?x.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+const pc=x=>f(x*100,1)+'%';
+function erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+.3275911*x);return s*(1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x))}
+const cdf=z=>.5*(1+erf(z/Math.SQRT2));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function regress(y){const n=y.length,x=y.map((_,i)=>i+1),mx=mean(x),my=mean(y);let sxy=0,sxx=0;x.forEach((v,i)=>{sxy+=(v-mx)*(y[i]-my);sxx+=(v-mx)**2});const b=sxx?sxy/sxx:0;return{b,a:my-b*mx}}
+
+/* ---------- parseo CSV ---------- */
+function parse(text){
+  const rows=text.split(/\r?\n/).map(r=>r.trim()).filter(Boolean).map(r=>r.split(/[;,\t]/).map(c=>c.trim().replace(/^"|"$/g,'').replace(',','.')));
+  if(!rows.length)throw'No hay datos.';
+  let start=0;if(rows[0].some(c=>c!==''&&isNaN(Number(c))))start=1;
+  const out=[];
+  for(let i=start;i<rows.length;i++){
+    const r=rows[i],v=Number(r[r.length-1]);
+    if(r[r.length-1]===''||isNaN(v))throw'Fila '+(i+1)+': «'+r.join(',')+'» no tiene un número válido en la última columna.';
+    if(v<0)throw'Fila '+(i+1)+': hay un valor negativo ('+v+').';
+    out.push({lote:r.length>1?r[0]:String(out.length+1),v});
+  }
+  if(out.length<5)throw'Se necesitan al menos 5 registros (hay '+out.length+').';
+  return out;
+}
+
+/* ---------- análisis ---------- */
+function analyze(){
+  const v=D.map(d=>d.v),n=v.length,lse=+S.lse,meta=+S.meta,m=mean(v),s=sd(v);
+  const freq={};v.forEach(x=>freq[x]=(freq[x]||0)+1);
+  const maxF=Math.max(...Object.values(freq)),modes=Object.keys(freq).filter(k=>freq[k]===maxF).map(Number);
+  const q1=q(v,.25),q3=q(v,.75),iqr=q3-q1,fence=q3+1.5*iqr;
+  const over=D.filter(d=>d.v>lse),atMeta=v.filter(x=>x<=meta).length;
+  const mx=Math.max(...v),mxLot=D.find(d=>d.v===mx);
+  const reg=regress(v),k=Math.min(12,Math.floor(n/2)),first=mean(v.slice(0,k)),last=mean(v.slice(-k));
+  const sk=s?sum(v.map(x=>((x-m)/s)**3))*n/((n-1)*(n-2)||1):0;
+  let run=0,maxRun=0;v.forEach(x=>{run=x>lse?run+1:0;maxRun=Math.max(maxRun,run)});
+  const outl=D.filter(d=>d.v>fence);
+  return{v,n,lse,meta,m,s,med:q(v,.5),modes,mn:Math.min(...v),mx,mxLot,q1,q3,iqr,fence,outl,over,atMeta,cv:m?s/m:0,sk,reg,first,last,k,maxRun,
+    cpu:s?(lse-m)/(3*s):NaN,pOver:s?1-cdf((lse+.5-m)/s):(m>lse?1:0),freq,sturges:1+3.322*Math.log10(n),
+    allInt:v.every(Number.isInteger)};
+}
+function simulate(A,dm,ds){
+  const m=A.m*(1-dm/100),s=A.s*(1-ds/100),p=s>0?1-cdf((A.lse+.5-m)/s):(m>A.lse?1:0);
+  return{m,s,p,exp:A.n?p*A.n:0};
+}
+
+/* ---------- render ---------- */
+function applyHeader(){$('hTitle').textContent=S.emp;$('hSub').textContent=S.vari+' ('+S.uni+') · Límite '+S.lse+' · Meta '+S.meta}
+function renderData(){
+  $('dCount').textContent='— '+D.length+' registros';
+  const lse=+S.lse;
+  $('tData').innerHTML='<tr><th>#</th><th>Lote</th><th>'+esc(S.uni)+'</th><th>Estado</th></tr>'+D.map((d,i)=>'<tr'+(d.v>lse?' class="bad"':'')+'><td>'+(i+1)+'</td><td>'+esc(d.lote)+'</td><td>'+d.v+'</td><td>'+(d.v>lse?'Fuera de especificación':d.v<=+S.meta?'En meta':'Aceptable')+'</td></tr>').join('');
+  $('demoNote').hidden=!S.demo;
+}
+function renderStats(){
+  const A=analyze();
+  const kp=[['Media',f(A.m),A.m<=A.meta?'ok':A.m>A.lse?'bad':''],['Mediana',f(A.med,1),''],['Desv. típica',f(A.s),''],
+   ['Lotes fuera de límite',A.over.length+' de '+A.n+' ('+pc(A.over.length/A.n)+')',A.over.length?'bad':'ok'],
+   ['Lotes en meta (≤'+A.meta+')',A.atMeta+' de '+A.n+' ('+pc(A.atMeta/A.n)+')',A.atMeta/A.n>=.5?'ok':'bad'],
+   ['Cpu = (LSE − media)/3s',f(A.cpu),A.cpu>=1.33?'ok':'bad']];
+  $('kpis').innerHTML=kp.map(k=>'<div class="kpi '+k[2]+'"><b>'+k[1]+'</b><span>'+k[0]+'</span></div>').join('');
+  const rows=[['Registros (n)',A.n],['Media',f(A.m)],['Mediana',f(A.med,1)],['Moda',A.modes.join(', ')],['Mínimo',A.mn],['Máximo',A.mx+' (lote '+esc(A.mxLot.lote)+')'],['Rango',A.mx-A.mn],['Varianza',f(A.s**2)],['Desviación típica (muestral)',f(A.s)],['Coef. de variación',pc(A.cv)],['Q1',f(A.q1,2)],['Q3',f(A.q3,2)],['Rango intercuartílico',f(A.iqr,2)],['Límite atípicos (Q3+1,5·RIC)',f(A.fence,2)],['Lotes atípicos',A.outl.length?A.outl.map(d=>'lote '+esc(d.lote)+' ('+d.v+')').join(', '):'ninguno'],['Asimetría',f(A.sk)],['Pendiente de tendencia',f(A.reg.b,3)+' '+esc(S.uni)+' por lote'],['Racha más larga sobre el límite',A.maxRun+' lotes']];
+  $('tStats').innerHTML='<tr><th>Estadístico</th><th>Valor</th></tr>'+rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('');
+  /* frecuencias: conteos enteros -> una clase por valor */
+  let cls=[];
+  if(A.allInt){for(let x=A.mn;x<=A.mx;x++)cls.push({a:x,b:x,l:String(x)});
+    $('freqNote').textContent='Los datos son conteos enteros, por eso cada clase es un valor (amplitud 1). La regla de Sturges sugeriría ≈'+Math.round(A.sturges)+' clases con amplitud no entera ('+f((A.mx-A.mn)/A.sturges,1)+'), que dejaría clases vacías o límites sin sentido para un conteo.'}
+  else{const k=Math.round(A.sturges),w=(A.mx-A.mn)/k||1;for(let i=0;i<k;i++){const a=A.mn+i*w;cls.push({a,b:a+w,l:f(a,1)+' – '+f(a+w,1)})}$('freqNote').textContent='Clases por la regla de Sturges ('+k+' clases).'}
+  let acc=0;
+  const body=cls.map((c,i)=>{const fi=A.v.filter(x=>A.allInt?x===c.a:(x>=c.a&&(i===cls.length-1?x<=c.b:x<c.b))).length;acc+=fi;return'<tr'+(A.allInt&&c.a>A.lse?' class="bad"':'')+'><td>'+c.l+'</td><td>'+fi+'</td><td>'+pc(fi/A.n)+'</td><td>'+acc+'</td><td>'+pc(acc/A.n)+'</td></tr>'}).join('');
+  $('tFreq').innerHTML='<tr><th>Clase</th><th>Frecuencia</th><th>Rel.</th><th>Acum.</th><th>Rel. acum.</th></tr>'+body+'<tr><td><b>Total</b></td><td><b>'+A.n+'</b></td><td><b>100,0%</b></td><td></td><td></td></tr>';
+  A.cls=cls;return A;
+}
+
+const CH=[['c1','Defectos por lote vs. límite y meta'],['c2','Estado de cada lote'],['c3','Participación por estado del lote'],['c4','Tendencia: número de lote vs. defectos']];
+function buildGraphWrappers(){
+  $('gWrap').innerHTML=CH.map(c=>'<div class="card"><h2>'+c[1]+'</h2><div class="chart"><canvas id="'+c[0]+'" role="img" aria-label="'+c[1]+'"></canvas></div><div class="row"><button class="btn sm" data-dl="'+c[0]+'">Descargar imagen</button></div></div>').join('');
+  document.querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>{const cv=$(b.dataset.dl),a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download=b.dataset.dl+'.png';a.click()});
+}
+const bg={id:'bg',beforeDraw(c){const x=c.ctx;x.save();x.globalCompositeOperation='destination-over';x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.restore()}};
+function renderCharts(){
+  const A=analyze();Object.values(charts).forEach(c=>c.destroy());charts={};
+  const lab=D.map(d=>d.lote),ax=(x,y)=>({x:{title:{display:true,text:x}},y:{beginAtZero:true,title:{display:true,text:y}}});
+  const base={responsive:true,maintainAspectRatio:false,animation:false};
+  const colors=A.v.map(x=>x>A.lse?'#c92a2a':x<=A.meta?'#2b8a3e':'#e8a317');
+  charts.c1=new Chart($('c1'),{type:'line',plugins:[bg],data:{labels:lab,datasets:[
+    {label:S.uni,data:A.v,borderColor:'#2f4858',backgroundColor:'#2f4858',pointBackgroundColor:colors,pointRadius:4,tension:0},
+    {label:'Límite ('+A.lse+')',data:lab.map(()=>A.lse),borderColor:'#c92a2a',borderDash:[6,4],pointRadius:0},
+    {label:'Meta ('+A.meta+')',data:lab.map(()=>A.meta),borderColor:'#2b8a3e',borderDash:[6,4],pointRadius:0}]},
+    options:{...base,scales:ax('Número de lote',S.uni)}});
+  charts.c2=new Chart($('c2'),{type:'bar',plugins:[bg],data:{labels:lab,datasets:[{label:S.uni,data:A.v,backgroundColor:colors}]},
+    options:{...base,plugins:{legend:{display:false},tooltip:{callbacks:{afterLabel:i=>A.v[i.dataIndex]>A.lse?'Fuera de especificación':A.v[i.dataIndex]<=A.meta?'En meta':'Aceptable'}}},scales:ax('Número de lote',S.uni)}});
+  const nOk=A.atMeta,nOver=A.over.length,nMid=A.n-nOk-nOver;
+  charts.c3=new Chart($('c3'),{type:'pie',plugins:[bg],data:{labels:['En meta (≤'+A.meta+')','Aceptable','Fuera de límite (>'+A.lse+')'],datasets:[{data:[nOk,nMid,nOver],backgroundColor:['#2b8a3e','#e8a317','#c92a2a']}]},
+    options:{...base,plugins:{title:{display:true,text:'Lotes por estado (n = '+A.n+')'}}}});
+  const pts=A.v.map((y,i)=>({x:i+1,y}));
+  charts.c4=new Chart($('c4'),{type:'scatter',plugins:[bg],data:{datasets:[
+    {label:'Lotes',data:pts,backgroundColor:colors,pointRadius:4},
+    {label:'Tendencia (pendiente '+f(A.reg.b,3)+')',type:'line',data:[{x:1,y:A.reg.a+A.reg.b},{x:A.n,y:A.reg.a+A.reg.b*A.n}],borderColor:'#e8590c',pointRadius:0}]},
+    options:{...base,scales:ax('Número de lote',S.uni)}});
+}
+
+/* ---------- diagnóstico ---------- */
+function diagnose(A){
+  const u=S.uni;
+  const st=[
+    A.over.length===0?'Ningún lote supera el límite de '+A.lse+' '+u+' (100% dentro de especificación).':pc(1-A.over.length/A.n)+' de los lotes ('+(A.n-A.over.length)+' de '+A.n+') cumple el límite de '+A.lse+' '+u+'.',
+    'El mejor tramo de '+A.k+' lotes seguidos tuvo una media de '+f(Math.min(...Array.from({length:A.n-A.k+1},(_,i)=>mean(A.v.slice(i,i+A.k)))),2)+' '+u+', lo que demuestra que el proceso puede acercarse a la meta de '+A.meta+'.',
+    A.atMeta?A.atMeta+' lotes ('+pc(A.atMeta/A.n)+') ya alcanzaron la meta de ≤'+A.meta+' '+u+'; mínimo observado: '+A.mn+'.':'La mediana es '+f(A.med,1)+' '+u+', por debajo/cerca del límite en la mayor parte del periodo.'];
+  const wk=[
+    A.over.length?A.over.length+' lotes ('+pc(A.over.length/A.n)+') superaron el límite; se estiman ≈'+pc(A.pOver)+' de lotes fuera con el comportamiento actual (Cpu = '+f(A.cpu)+').':'Aunque ningún lote supera el límite, Cpu = '+f(A.cpu)+' indica margen reducido.',
+    'La media ('+f(A.m)+') está '+f(A.m-A.meta)+' '+u+' por encima de la meta; solo '+pc(A.atMeta/A.n)+' de los lotes la cumple.',
+    A.reg.b>0.02?'Tendencia al alza: +'+f(A.reg.b,3)+' '+u+' por lote; los primeros '+A.k+' lotes promediaron '+f(A.first)+' y los últimos '+A.k+', '+f(A.last)+' ('+(A.first?'+'+pc((A.last-A.first)/A.first):'')+').':
+    'Variabilidad: desv. típica '+f(A.s)+' (CV '+pc(A.cv)+'); máximo de '+A.mx+' en el lote '+esc(A.mxLot.lote)+'.'];
+  if(A.outl.length)wk[2]+=' Lote atípico: '+A.outl.map(d=>d.lote+' ('+d.v+')').join(', ')+'.';
+  const hid=A.reg.b>0.02?'<p><b>Problema oculto detectado:</b> el promedio global parece aceptable, pero el proceso se deteriora con el tiempo (deriva al alza)'+(A.maxRun>=2?' y hay una racha de '+A.maxRun+' lotes seguidos sobre el límite':'')+'. Un resumen con solo la media no lo muestra; el gráfico de líneas y la tendencia sí.</p>':'';
+  const o=A.mxLot;
+  return'<h3>Fortalezas</h3><ul class="d">'+st.map(x=>'<li>'+x+'</li>').join('')+'</ul><h3>Debilidades</h3><ul class="d">'+wk.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+hid+
+  '<p><b>Lote que llama la atención:</b> el lote '+esc(o.lote)+' con '+o.v+' '+u+', '+f((o.v-A.m)/(A.s||1),1)+' desviaciones típicas sobre la media'+(A.outl.some(d=>d===o)?' (atípico según el criterio del rango intercuartílico).':'.')+'</p>';
+}
+function alternatives(A){
+  const sA=simulate(A,0,30),sB=simulate(A,20,0),sC=simulate(A,15,25),dr=Math.max(0,A.last-A.first);
+  const L=[
+   ['Aplicar carta de control con regla de reacción','Calcular límites (media ± 3s de los primeros '+A.k+' lotes) y detener la línea cuando un lote supere '+A.lse+' o haya 2 lotes seguidos sobre la meta.','$1–3 millones COP (capacitación y formato)','Detecta desvíos a tiempo: evita rachas como la de '+A.maxRun+' lotes seguidos sobre el límite.','Alta'],
+   ['Mantenimiento preventivo y control de desgaste de troqueles','Programar afilado/cambio de troquel y verificación de holguras cada cierto número de lotes, registrando el desgaste.','$4–10 millones COP al año','Atacar la deriva (+'+f(dr)+' '+S.uni+' entre el inicio y el final) podría bajar la media hacia '+f(A.m-dr/2)+'.','Alta'],
+   ['Análisis de causa raíz del lote '+esc(A.mxLot.lote),'Revisar bitácora de ese lote (material, operario, ajuste de máquina) con diagrama de Ishikawa y 5 porqués.','Bajo: horas de ingeniería','Evita repetir un lote de '+A.mx+' '+S.uni+', '+f(A.mx-A.m,1)+' sobre la media.','Media'],
+   ['Estandarizar el ajuste de arranque (hoja de set-up y poka-yoke)','Fijar parámetros de presión, alimentación y posición de lámina, con topes que impidan montar mal la pieza.','$3–8 millones COP','Reducir la variabilidad 30% llevaría los lotes fuera de límite de ≈'+pc(A.pOver)+' a ≈'+pc(sA.p)+'.','Media'],
+   ['Plan de mejora combinado hacia la meta de '+A.meta,'Combinar las acciones anteriores con revisión mensual de la media y de los lotes fuera de límite.','Seguimiento interno','Con −15% en media y −25% en variabilidad: media '+f(sC.m)+', ≈'+pc(sC.p)+' fuera de límite (solo bajar la media 20% daría '+pc(sB.p)+').','Baja']];
+  return L.map(a=>'<div class="alt '+a[4]+'"><b>'+a[0]+'</b><p><u>Qué hacer:</u> '+a[1]+'</p><p><u>Costo estimado:</u> '+a[2]+' <small>(orientativo)</small></p><p><u>Impacto esperado:</u> '+a[3]+'</p><p><u>Prioridad:</u> <b>'+a[4]+'</b></p></div>').join('');
+}
+function renderReco(){
+  const A=analyze();$('diag').innerHTML=diagnose(A);$('alts').innerHTML=alternatives(A);updateSim()
+}
+function updateSim(){
+  const A=analyze(),dm=+$('sMean').value,ds=+$('sSd').value,r=simulate(A,dm,ds);
+  $('vMean').textContent=dm;$('vSd').textContent=ds;
+  $('simOut').innerHTML='Media: <b>'+f(A.m)+' → '+f(r.m)+'</b> '+esc(S.uni)+'<br>Desv. típica: <b>'+f(A.s)+' → '+f(r.s)+'</b><br>Lotes fuera del límite: <b>'+pc(A.pOver)+' → '+pc(r.p)+'</b> (≈'+f(r.exp,1)+' de cada '+A.n+' lotes)<br>'+(r.m<=A.meta?'<span style="color:var(--ok)">La media alcanza la meta de '+A.meta+'.</span>':'Falta '+f(r.m-A.meta)+' '+esc(S.uni)+' para la meta de '+A.meta+'.');
+}
+
+/* ---------- informe ---------- */
+function report(){
+  try{
+  if(!charts.c1)renderCharts();
+  const A=analyze(),w=window.open('','_blank');
+  if(!w){$('rMsg').textContent='El navegador bloqueó la ventana emergente. Permítela y vuelve a pulsar el botón.';return}
+  $('rMsg').textContent='';
+  const imgs=CH.map(c=>'<figure><figcaption>'+c[1]+'</figcaption><img src="'+$(c[0]).toDataURL('image/png')+'" alt="'+c[1]+'"></figure>').join('');
+  const today=new Date().toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
+  const tbl=document.createElement('div');tbl.innerHTML='<table>'+$('tStats').innerHTML+'</table><h3>Tabla de frecuencias</h3><table>'+$('tFreq').innerHTML+'</table>';
+  const res='Se analizaron '+A.n+' lotes de '+esc(S.vari.toLowerCase())+'. La media fue '+f(A.m)+' '+esc(S.uni)+' (mediana '+f(A.med,1)+', desviación típica '+f(A.s)+'), frente a una meta de '+A.meta+' y un límite de '+A.lse+'. '+A.over.length+' lotes ('+pc(A.over.length/A.n)+') superaron el límite y '+A.atMeta+' ('+pc(A.atMeta/A.n)+') alcanzaron la meta.'+(A.reg.b>0.02?' La tendencia es creciente (+'+f(A.reg.b,3)+' por lote), señal de deterioro progresivo.':'');
+  w.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Informe – '+esc(S.emp)+'</title><style>body{font:14px/1.5 "Segoe UI",sans-serif;color:#1d2730;max-width:820px;margin:0 auto;padding:16px}.cover{min-height:90vh;display:flex;flex-direction:column;justify-content:center;border-left:10px solid #e8590c;padding-left:24px}.cover h1{font-size:2rem;margin:0 0 8px;color:#2f4858}h2{color:#2f4858;border-bottom:2px solid #e8590c;padding-bottom:3px;margin-top:26px}table{border-collapse:collapse;width:100%;font-size:12px;margin:8px 0}th,td{border:1px solid #ccd3d8;padding:4px 8px;text-align:right}th:first-child,td:first-child{text-align:left}th{background:#eef0f2}tr.bad td{color:#c92a2a}figure{margin:12px 0;break-inside:avoid}figcaption{font-weight:600}img{max-width:100%}.alt{border-left:4px solid #999;padding:4px 10px;margin:8px 0;break-inside:avoid;background:#f6f7f8}.pb{page-break-before:always}button{padding:10px 16px;font:inherit;background:#e8590c;color:#fff;border:0;border-radius:6px;cursor:pointer}@media print{button{display:none}body{padding:0}}</style></head><body>'+
+  '<button onclick="window.print()">Imprimir / Guardar como PDF</button><div class="cover"><p>Informe de análisis estadístico</p><h1>'+esc(S.emp)+'</h1><p>'+esc(S.vari)+' ('+esc(S.uni)+')</p><p><b>Autor:</b> '+esc(S.aut)+'<br><b>Fecha:</b> '+today+'<br>UNIPAZ · Ingeniería de Producción · Estadística</p></div>'+
+  '<div class="pb"><h2>Resumen ejecutivo</h2><p>'+res+'</p><h2>Estadísticas</h2>'+tbl.innerHTML+'</div><div class="pb"><h2>Gráficos</h2>'+imgs+'</div><div class="pb"><h2>Diagnóstico</h2>'+diagnose(A)+'<h2>Recomendaciones</h2>'+alternatives(A)+'</div></body></html>');
+  w.document.close();
+  }catch(e){$('rMsg').textContent='No se pudo generar el informe: '+e.message}
+}
+
+/* ---------- eventos ---------- */
+function load(text,demo){
+  try{D=parse(text);S.csv=text;S.demo=!!demo;save();$('dMsg').className='msg';$('dMsg').textContent='✔ '+D.length+' registros cargados.';renderAll();return true}
+  catch(e){$('dMsg').className='msg err';$('dMsg').textContent='Error: '+e;return false}
+}
+function renderAll(){applyHeader();renderData();renderStats();renderCharts();renderReco()}
+function fill(){$('fEmp').value=S.emp;$('fVar').value=S.vari;$('fUni').value=S.uni;$('fMej').value=S.mej;$('fLse').value=S.lse;$('fMeta').value=S.meta;$('fAut').value=S.aut;$('csv').value=S.csv}
+[['fEmp','emp'],['fVar','vari'],['fUni','uni'],['fMej','mej'],['fLse','lse'],['fMeta','meta'],['fAut','aut']].forEach(([id,k])=>$(id).addEventListener('change',()=>{
+  const val=$(id).value;if((k==='lse'||k==='meta')&&(val===''||isNaN(+val)||+val<0)){$(id).value=S[k];return}
+  S[k]=val;save();renderAll()}));
+$('bUse').onclick=()=>load($('csv').value,false);
+$('bReset').onclick=()=>{S=Object.assign({},DEF);fill();load(S.csv,true)};
+$('file').onchange=e=>{const fl=e.target.files[0];if(!fl)return;const r=new FileReader();r.onload=()=>{$('csv').value=r.result;load(r.result,false)};r.readAsText(fl);e.target.value=''};
+$('sMean').oninput=$('sSd').oninput=updateSim;
+$('bRep').onclick=report;
+$('nav').onclick=e=>{const b=e.target.closest('button');if(!b)return;document.querySelectorAll('nav button,section').forEach(x=>x.classList.remove('on'));b.classList.add('on');$(b.dataset.s).classList.add('on');scrollTo(0,0);if(b.dataset.s==='graf')renderCharts()};
+buildGraphWrappers();fill();if(!load(S.csv,S.demo)){S=Object.assign({},DEF);fill();load(S.csv,true)}
+</script>
+</body>
+</html>
